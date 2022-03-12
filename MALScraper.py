@@ -64,12 +64,12 @@ class MALScraper:
 
         return title_dict
 
-    def titles_to_csv(self):
+    def titles_to_csv(self, file_path):
         df = pd.DataFrame(data=self.titles)
-        df.to_csv("titles.csv", index=False)
+        df.to_csv(file_path, index=False)
 
-    def load_from_csv(self):
-        df = pd.read_csv("titles.csv")
+    def load_from_csv(self, file_path):
+        df = pd.read_csv(file_path)
         self.titles = df.to_dict("records")
 
 
@@ -79,7 +79,13 @@ if __name__ == '__main__':
                             help="Number of first title scrapped, sorted by score")
     arg_parser.add_argument('--limit', type=int, required=False, default=1000,
                             help="Number of title at which scrapping stops, sorted by score")
+    arg_parser.add_argument('--save', required=False, default="titles.csv",
+                            help="Path to the file you want to save dataset into")
+    arg_parser.add_argument('--load', required=False, default=None,
+                            help="Path to the file with dataset you want to add data to")
     args = arg_parser.parse_args()
     mals = MALScraper()
+    if args.load != None:
+        mals.load_from_csv(args.load)
     mals.scrape_anime(args.start, args.limit)
-    mals.titles_to_csv()
+    mals.titles_to_csv(args.save)
