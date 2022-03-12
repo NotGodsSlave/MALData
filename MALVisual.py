@@ -2,6 +2,7 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
+import sys, argparse
 
 mal_genres = ["Action", "Adventure", "Boys Love", "Comedy", "Drama", "Fantasy", "Girls Love", "Horror", "Mystery", "Romance", "Sci-Fi", "Slice of Life",
               "Sports", "Supernatural", "Ecchi", "Hentai", "Cars", "Demons", "Game", "Harem", "Historical", "Martial Arts", "Mecha", "Military", "Music",
@@ -27,6 +28,7 @@ def genre_scores(df):
             genre_scores[genre] = df.groupby(genre)['Score'].mean()[1]
     plt.figure(figsize = (24,12))
     plt.bar(list(genre_scores.keys()), genre_scores.values(), color='b')
+    plt.xticks(rotation='vertical')
     plt.show()
 
 def score_distribution(df, bins):
@@ -35,7 +37,11 @@ def score_distribution(df, bins):
     plt.show()
 
 if __name__ == "__main__":
-    df = pd.read_csv('titles.csv')
+    arg_parser = argparse.ArgumentParser("Visuals parser")
+    arg_parser.add_argument('--f', required=False, default='titles.csv',
+                            help="Path to dataset to visualise")
+    args = arg_parser.parse_args()
+    df = pd.read_csv(args.f)
     genre_correlation(df)
     genre_scores(df)
     score_distribution(df, 20)

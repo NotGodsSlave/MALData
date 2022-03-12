@@ -31,36 +31,42 @@ class MALScraper:
                 soup = BeautifulSoup(req.content, "html.parser")
                 tds = soup.select("td.title.al.va-t.word-break")
                 for td in tds:
-                    self.titles.append(self.get_title(td.find('a')['href']))
+                    title = self.get_title(td.find('a')['href'])
+                    if title != None:
+                        self.titles.append(title)
                     counter = counter + 1
                     if counter % 100 == 0:
                         print(f'{counter-start} titles scraped')
                         time.sleep(180) # use if scraping without proxy to avoid IP ban
                     if counter >= lim:
                         break
-    
+
     def get_title(self, url):
         id = self.get_id_from_link(url)
-        if self.proxies == None:
-            req = requests.get(url)
-        else:
-            print(self.proxy_counter)
-            req = requests.get(url, proxies = self.proxies[self.proxy_counter])
-            self.proxy_counter = (self.proxy_counter + 1) % self.proxies.size()
-        title_dict = {"id": id, "Title": None, "Score": None, "Scored by": None, "Members": None,
-                 "Genres": None, "Status": None}
-        if req.status_code != 200:
-            print(f"Error scraping the page with id {id}, status code {req.status_code}")
-        else:
-            soup = BeautifulSoup(req.content, "html.parser")
-            title_dict["Title"] = soup.find(class_="title-name").text
-            title_dict["Score"] = float(soup.find("span", class_="score-label").text)
-            title_dict["Scored by"] = int(soup.find("span", itemprop="ratingCount").text)
-            title_dict["Members"] = int(soup.find("span",string="Members:").parent.text.replace("Members:","").replace(",","").strip())
-            title_dict["Genres"] = [g.text for g in soup.find_all("span",itemprop="genre")]
-            title_dict["Status"] = soup.find("span", string="Status:").parent.text.replace("Status:","").strip()
-            for genre in self.mal_genres:
-                title_dict[genre] = int(genre in title_dict["Genres"])
+        try:
+            if self.proxies == None:
+                req = requests.get(url)
+            else:
+                print(self.proxy_counter)
+                req = requests.get(url, proxies = self.proxies[self.proxy_counter])
+                self.proxy_counter = (self.proxy_counter + 1) % self.proxies.size()
+            title_dict = {"id": id, "Title": None, "Score": None, "Scored by": None, "Members": None,
+                    "Genres": None, "Status": None}
+            if req.status_code != 200:
+                print(f"Error scraping the page with id {id}, status code {req.status_code}")
+            else:
+                soup = BeautifulSoup(req.content, "html.parser")
+                title_dict["Title"] = soup.find(class_="title-name").text
+                title_dict["Score"] = float(soup.find("span", class_="score-label").text)
+                title_dict["Scored by"] = int(soup.find("span", itemprop="ratingCount").text)
+                title_dict["Members"] = int(soup.find("span",string="Members:").parent.text.replace("Members:","").replace(",","").strip())
+                title_dict["Genres"] = [g.text for g in soup.find_all("span",itemprop="genre")]
+                title_dict["Status"] = soup.find("span", string="Status:").parent.text.replace("Status:","").strip()
+                for genre in self.mal_genres:
+                    title_dict[genre] = int(genre in title_dict["Genres"])
+        except BaseException as e:
+            print(f"Could not get info from the page with id {id}, error: {e}")
+            return None
 
         return title_dict
 
