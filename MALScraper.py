@@ -72,6 +72,8 @@ class MALScraper:
 
     def titles_to_csv(self, file_path):
         df = pd.DataFrame(data=self.titles)
+        if df.duplicated(subset=["id"]).any():
+            df.drop_duplicates(subset=["id"], inplace=True)
         df.to_csv(file_path, index=False)
 
     def load_from_csv(self, file_path):

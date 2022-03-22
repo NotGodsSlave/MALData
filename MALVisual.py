@@ -33,7 +33,14 @@ def genre_scores(df):
 
 def score_distribution(df, bins):
     scores = df['Score']
+    plt.figure(figsize = (24,12))
     plt.hist(scores, bins = bins)
+    plt.show()
+
+def score_by_status(df):
+    dbs = df.groupby('Status')['Score'].mean()
+    plt.figure(figsize = (24,12))
+    plt.bar(df['Status'].unique(),dbs)
     plt.show()
 
 if __name__ == "__main__":
@@ -45,4 +52,5 @@ if __name__ == "__main__":
     genre_correlation(df)
     genre_scores(df)
     score_distribution(df, 20)
+    score_by_status(df)
 
