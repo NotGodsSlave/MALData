@@ -6,13 +6,23 @@ import time
 import sys, argparse
 
 class MALScraper:
-    def __init__(self, proxies = None):
+    def __init__(self):
         self.titles = []
         self.mal_genres = ["Action", "Adventure", "Boys Love", "Comedy", "Drama", "Fantasy", "Girls Love", "Horror", "Mystery", "Romance", "Sci-Fi", "Slice of Life",
               "Sports", "Supernatural", "Ecchi", "Hentai", "Cars", "Demons", "Game", "Harem", "Historical", "Martial Arts", "Mecha", "Military", "Music",
               "Parody", "Police", "Psychological", "Samurai", "School", "Space", "Supew Power", "Vampire"]
-        self.proxies = proxies
+        self.proxies = []
         self.proxy_counter = 0
+
+    def add_proxies(self, proxie_file):
+        with open(proxie_file) as f:
+            for line in f:
+                ipaddr = line.strip()
+                d = {
+                    "http": f"http://{ipaddr}",
+                    "https": f"https://{ipaddr}"
+                }
+                self.proxies.append(d)
 
     def get_id_from_link(self, url):
         return int(url.split('/')[4])
@@ -35,21 +45,22 @@ class MALScraper:
                     if title != None:
                         self.titles.append(title)
                     counter = counter + 1
-                    if counter % 100 == 0:
+                    if counter % 10 == 0:
                         print(f'{counter-start} titles scraped')
-                        time.sleep(180) # use if scraping without proxy to avoid IP ban
+                        if len(self.proxies) < 2:
+                            time.sleep(30) # use if scraping without proxy to avoid IP ban
                     if counter >= lim:
                         break
 
     def get_title(self, url):
         id = self.get_id_from_link(url)
         try:
-            if self.proxies == None:
+            if len(self.proxies) == 0:
                 req = requests.get(url)
             else:
-                print(self.proxy_counter)
+                #print(self.proxy_counter)
                 req = requests.get(url, proxies = self.proxies[self.proxy_counter])
-                self.proxy_counter = (self.proxy_counter + 1) % self.proxies.size()
+                self.proxy_counter = (self.proxy_counter + 1) % len(self.proxies)
             title_dict = {"id": id, "Title": None, "Score": None, "Scored by": None, "Members": None,
                     "Genres": None, "Status": None}
             if req.status_code != 200:
@@ -91,9 +102,13 @@ if __name__ == '__main__':
                             help="Path to the file you want to save dataset into")
     arg_parser.add_argument('--load', required=False, default=None,
                             help="Path to the file with dataset you want to add data to")
+    arg_parser.add_argument('--proxies', required=False, default=None,
+                            help="Path to the file with the list of proxies to be used")
     args = arg_parser.parse_args()
     mals = MALScraper()
     if args.load != None:
         mals.load_from_csv(args.load)
+    if args.proxies != None:
+        mals.add_proxies(args.proxies)
     mals.scrape_anime(args.start, args.limit)
     mals.titles_to_csv(args.save)
