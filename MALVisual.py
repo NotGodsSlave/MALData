@@ -19,7 +19,8 @@ def genre_correlation(df):
     mask = np.zeros_like(corr)
     mask[np.triu_indices_from(mask)] = True
     sns.heatmap(corr, cmap=cmap, mask=mask)
-    plt.show()
+    plt.savefig("genre_correlation.jpg")
+    plt.close()
 
 def genre_scores(df):
     genre_scores = {}
@@ -29,19 +30,22 @@ def genre_scores(df):
     plt.figure(figsize = (24,12))
     plt.bar(list(genre_scores.keys()), genre_scores.values(), color='b')
     plt.xticks(rotation='vertical')
-    plt.show()
+    plt.savefig("scores_by_genre.jpg")
+    plt.close()
 
 def score_distribution(df, bins):
     scores = df['Score']
     plt.figure(figsize = (24,12))
     plt.hist(scores, bins = bins)
-    plt.show()
+    plt.savefig("score_distribution.jpg")
+    plt.close()
 
 def score_by_status(df):
     dbs = df.groupby('Status')['Score'].mean()
     plt.figure(figsize = (24,12))
     plt.bar(df['Status'].unique(),dbs)
-    plt.show()
+    plt.savefig("scores_by_status.jpg")
+    plt.close()
 
 if __name__ == "__main__":
     arg_parser = argparse.ArgumentParser("Visuals parser")
